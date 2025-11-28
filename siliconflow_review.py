@@ -191,6 +191,12 @@ class SiliconFlowReviewer:
         self.video_dir = Path(video_dir) if video_dir else Path(config.video_dir)
         self.extractor = VideoFeatureExtractor()
 
+        # 设置输出目录（跟随输入目录）
+        self.approved_dir = self.video_dir / "approved"
+        self.rejected_dir = self.video_dir / "rejected"
+        self.manual_review_dir = self.video_dir / "manual_review"
+        self.results_path = self.video_dir / "review_results.json"
+
         # 审核规则提示词
         self.review_prompt = """审核音乐MV，返回JSON格式结果。
 
@@ -355,11 +361,11 @@ class SiliconFlowReviewer:
         video_path = Path(video_path)
 
         if decision == "approved":
-            target_dir = Path(self.config.approved_dir)
+            target_dir = self.approved_dir
         elif decision == "rejected":
-            target_dir = Path(self.config.rejected_dir)
+            target_dir = self.rejected_dir
         else:
-            target_dir = Path(self.config.manual_review_dir)
+            target_dir = self.manual_review_dir
 
         target_dir.mkdir(parents=True, exist_ok=True)
         target_path = target_dir / video_path.name
@@ -415,10 +421,7 @@ class SiliconFlowReviewer:
             "results": results
         }
 
-        results_path = Path(self.config.results_path)
-        results_path.parent.mkdir(parents=True, exist_ok=True)
-
-        with open(results_path, "w", encoding="utf-8") as f:
+        with open(self.results_path, "w", encoding="utf-8") as f:
             json.dump(summary, f, ensure_ascii=False, indent=2)
 
         # 打印统计
@@ -431,7 +434,7 @@ class SiliconFlowReviewer:
         print(f"❌ 拒绝: {rejected} ({rejected/len(video_paths)*100:.1f}%)")
         print(f"❓ 待复核: {manual_review} ({manual_review/len(video_paths)*100:.1f}%)")
         print(f"📊 Token 使用: {total_tokens:,}")
-        print(f"📄 结果已保存: {results_path}")
+        print(f"📄 结果已保存: {self.results_path}")
         print("="*60)
 
         return summary
