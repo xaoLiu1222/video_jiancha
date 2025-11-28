@@ -1,0 +1,83 @@
+# ============================================================
+# 视频审核系统配置文件
+# Video Review System Configuration
+# ============================================================
+
+# 硅基流动 API 配置 (必须)
+# 获取 API Key: https://siliconflow.cn
+siliconflow:
+  # API 密钥 (从硅基流动控制台获取)
+  # 也可通过环境变量 SILICONFLOW_API_KEY 设置 (优先级更高)
+  api_key: ""
+
+  # 使用的模型名称
+  # 推荐: Qwen/Qwen3-VL-72B-Instruct (准确率优先)
+  # 备选: Qwen/Qwen3-VL-32B-Thinking (速度与准确率平衡)
+  model: "Qwen/Qwen3-VL-72B-Instruct"
+
+  # API 基础地址 (通常无需修改)
+  api_base: "https://api.siliconflow.cn/v1"
+
+  # API 超时时间 (秒)
+  timeout: 180
+
+# 视频目录配置
+paths:
+  # 待审核视频目录 (支持绝对路径, 如 U 盘: /media/usb/videos)
+  video_dir: "./data/to_review"
+
+  # 审核通过视频存放目录
+  approved_dir: "./data/approved"
+
+  # 审核拒绝视频存放目录
+  rejected_dir: "./data/rejected"
+
+  # 需人工复核视频存放目录
+  manual_review_dir: "./data/manual_review"
+
+  # 审核结果保存路径
+  results_path: "./data/results/review_results.json"
+
+# 视频处理配置
+video:
+  # 每个视频采样帧数 (越多越准确, 但消耗更多 token)
+  num_frames: 6
+
+  # 支持的视频格式
+  formats:
+    - ".mp4"
+    - ".avi"
+    - ".mov"
+    - ".ts"
+    - ".mkv"
+    - ".flv"
+
+  # 最小视频时长 (秒), 低于此时长自动拒绝
+  min_duration: 120  # 2 分钟
+
+# 图片压缩配置 (节省 token)
+image:
+  # 图片最大边长 (像素)
+  max_size: 512
+
+  # JPEG 压缩质量 (1-100)
+  quality: 75
+
+# 审核规则配置
+review_rules:
+  # 是否启用格式检查
+  format_check_enabled: true
+
+  # 是否拒绝竖屏视频
+  reject_vertical: true
+
+  # 黑边检测阈值 (像素亮度, 0-255)
+  black_border_threshold: 20
+
+# 模型参数配置
+model_params:
+  # 最大输出 token 数
+  max_tokens: 512
+
+  # 温度参数 (0-1, 越低越稳定)
+  temperature: 0.3
