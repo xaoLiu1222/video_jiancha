@@ -41,7 +41,8 @@ paths:
 # 视频处理配置
 video:
   # 每个视频采样帧数 (越多越准确, 但消耗更多 token)
-  num_frames: 6
+  # 建议: 10-12 帧可获得较好的精准度
+  num_frames: 12
 
   # 支持的视频格式
   formats:
@@ -55,13 +56,28 @@ video:
   # 最小视频时长 (秒), 低于此时长自动拒绝
   min_duration: 120  # 2 分钟
 
-# 图片压缩配置 (节省 token)
+  # 是否启用智能关键帧提取 (基于场景变化检测)
+  # true: 智能提取场景变化点的帧 (推荐, 更准确)
+  # false: 均匀采样 (更快, 但可能漏掉关键内容)
+  smart_extraction: true
+
+  # 智能提取时的最小帧间隔 (帧数)
+  # 避免提取过于相近的帧
+  min_frame_interval: 30
+
+  # 场景变化检测阈值 (0-100, 越小越敏感)
+  scene_threshold: 30.0
+
+# 图片压缩配置 (影响识别精度和 token 消耗)
 image:
   # 图片最大边长 (像素)
-  max_size: 512
+  # 建议: 768-1024 可获得更好的识别精度
+  # 原值 512 可能导致细节丢失
+  max_size: 768
 
   # JPEG 压缩质量 (1-100)
-  quality: 75
+  # 建议: 85 以上可保留更多细节
+  quality: 85
 
 # 审核规则配置
 review_rules:
@@ -74,10 +90,29 @@ review_rules:
   # 黑边检测阈值 (像素亮度, 0-255)
   black_border_threshold: 20
 
+# 审核策略配置 (新增)
+review:
+  # 是否启用二次审核 (对低置信度结果进行复核)
+  # true: 低置信度结果会进行二次审核 (更准确, 但消耗更多 token)
+  # false: 只进行一次审核
+  enable_double_check: true
+
+  # 置信度阈值 (0-1)
+  # 低于此阈值的结果会触发二次审核
+  confidence_threshold: 0.8
+
+  # 审核严格程度
+  # strict: 宁严勿松, 有疑虑就拒绝
+  # balanced: 平衡模式
+  # lenient: 宽松模式, 只拒绝明确违规
+  strictness: "strict"
+
 # 模型参数配置
 model_params:
   # 最大输出 token 数
-  max_tokens: 512
+  # 建议: 增加到 1024 以获得更详细的审核说明
+  max_tokens: 1024
 
   # 温度参数 (0-1, 越低越稳定)
-  temperature: 0.3
+  # 建议: 0.1-0.3 可获得更稳定的审核结果
+  temperature: 0.2

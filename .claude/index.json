@@ -1,0 +1,291 @@
+{
+  "timestamp": "2025-12-03T00:00:00Z",
+  "project_name": "video_jiancha",
+  "project_type": "Python CLI Application",
+  "description": "基于硅基流动 Qwen3-VL-72B 多模态大模型的智能视频内容审核系统",
+  "root_module": {
+    "path": "/",
+    "name": "video_jiancha",
+    "type": "root",
+    "entry_points": [
+      "siliconflow_review.py",
+      "start_review.sh",
+      "start_review.bat"
+    ],
+    "key_files": [
+      "siliconflow_review.py",
+      "requirements.txt",
+      "README.md",
+      "使用说明.md",
+      "快速开始.md"
+    ],
+    "documentation": "CLAUDE.md"
+  },
+  "modules": [
+    {
+      "path": "config/",
+      "name": "config",
+      "type": "configuration",
+      "responsibility": "配置管理：API Key、路径、参数",
+      "entry_points": [
+        "config.yaml",
+        "config.example.yaml"
+      ],
+      "key_files": [
+        "config.yaml",
+        "config.example.yaml"
+      ],
+      "interfaces": [
+        "Config.api_key",
+        "Config.model",
+        "Config.video_dir",
+        "Config.num_frames"
+      ],
+      "dependencies": [
+        "pyyaml"
+      ],
+      "documentation": "config/CLAUDE.md",
+      "coverage": {
+        "files_scanned": 2,
+        "files_total": 2,
+        "percentage": 100
+      }
+    },
+    {
+      "path": "src/features/",
+      "name": "features",
+      "type": "feature_extraction",
+      "responsibility": "特征提取：CLIP 视频编码",
+      "entry_points": [
+        "video_encoder.py"
+      ],
+      "key_files": [
+        "video_encoder.py",
+        "__init__.py"
+      ],
+      "interfaces": [
+        "VideoFeatureExtractor.encode()",
+        "VideoFeatureExtractor.get_video_metadata()",
+        "VideoFeatureExtractor.extract_frames()"
+      ],
+      "dependencies": [
+        "torch",
+        "transformers",
+        "opencv-python",
+        "numpy"
+      ],
+      "data_models": [
+        "VideoMetadata"
+      ],
+      "documentation": "src/features/CLAUDE.md",
+      "coverage": {
+        "files_scanned": 2,
+        "files_total": 2,
+        "percentage": 100
+      },
+      "notes": "可选模块，用于本地白名单方案"
+    },
+    {
+      "path": "src/pipeline/",
+      "name": "pipeline",
+      "type": "workflow",
+      "responsibility": "审核流程：白名单匹配决策",
+      "entry_points": [
+        "review_pipeline.py"
+      ],
+      "key_files": [
+        "review_pipeline.py",
+        "decision.py",
+        "__init__.py"
+      ],
+      "interfaces": [
+        "VideoReviewPipeline.review()",
+        "VideoReviewPipeline.review_batch()",
+        "VideoReviewPipeline.ingest_approved_video()",
+        "ReviewDecisionMaker.review()"
+      ],
+      "dependencies": [
+        "src.features.video_encoder",
+        "src.whitelist.feature_store"
+      ],
+      "data_models": [
+        "ReviewResult",
+        "ReviewDecision",
+        "BatchReviewSummary"
+      ],
+      "documentation": "src/pipeline/CLAUDE.md",
+      "coverage": {
+        "files_scanned": 3,
+        "files_total": 3,
+        "percentage": 100
+      },
+      "notes": "可选模块，用于本地白名单方案"
+    },
+    {
+      "path": "src/whitelist/",
+      "name": "whitelist",
+      "type": "data_storage",
+      "responsibility": "白名单管理：特征存储与检索",
+      "entry_points": [
+        "feature_store.py"
+      ],
+      "key_files": [
+        "feature_store.py",
+        "similarity.py",
+        "__init__.py"
+      ],
+      "interfaces": [
+        "FeatureStore.add()",
+        "FeatureStore.search()",
+        "FeatureStore.save()",
+        "FeatureStore.load()",
+        "SimilarityCalculator.cosine_similarity()"
+      ],
+      "dependencies": [
+        "faiss-cpu",
+        "numpy"
+      ],
+      "data_models": [
+        "VideoRecord"
+      ],
+      "documentation": "src/whitelist/CLAUDE.md",
+      "coverage": {
+        "files_scanned": 3,
+        "files_total": 3,
+        "percentage": 100
+      },
+      "notes": "可选模块，FAISS 未安装时自动降级到 Numpy"
+    },
+    {
+      "path": "src/utils/",
+      "name": "utils",
+      "type": "utilities",
+      "responsibility": "工具函数：日志记录",
+      "entry_points": [
+        "logger.py"
+      ],
+      "key_files": [
+        "logger.py",
+        "__init__.py"
+      ],
+      "interfaces": [
+        "setup_logger()"
+      ],
+      "dependencies": [
+        "logging"
+      ],
+      "documentation": "src/utils/CLAUDE.md",
+      "coverage": {
+        "files_scanned": 2,
+        "files_total": 2,
+        "percentage": 100
+      }
+    },
+    {
+      "path": "data/",
+      "name": "data",
+      "type": "runtime_data",
+      "responsibility": "数据目录：视频存储与结果",
+      "subdirectories": [
+        "to_review/",
+        "approved/",
+        "rejected/",
+        "manual_review/",
+        "results/",
+        "features/"
+      ],
+      "notes": "运行时目录，不包含在版本控制中（仅 .gitkeep）"
+    }
+  ],
+  "statistics": {
+    "total_modules": 6,
+    "total_files_scanned": 14,
+    "estimated_total_files": 20,
+    "coverage_percentage": 70,
+    "python_files": 12,
+    "config_files": 2,
+    "documentation_files": 11
+  },
+  "technology_stack": {
+    "language": "Python 3.8+",
+    "core_dependencies": [
+      "opencv-python>=4.8.0",
+      "numpy>=1.24.0",
+      "requests>=2.28.0",
+      "pyyaml>=6.0"
+    ],
+    "optional_dependencies": [
+      "torch>=2.0.0",
+      "transformers>=4.30.0",
+      "faiss-cpu>=1.7.4"
+    ],
+    "ai_model": "Qwen/Qwen3-VL-72B-Instruct (硅基流动 API)"
+  },
+  "architecture": {
+    "pattern": "单体应用 + 模块化设计",
+    "main_approach": "API 方案（siliconflow_review.py）",
+    "alternative_approach": "本地白名单方案（src/ 模块）",
+    "data_flow": "视频输入 → 预检查 → 帧提取 → Base64编码 → API调用 → JSON解析 → 决策判断 → 自动分类"
+  },
+  "review_rules": [
+    "林夕作品",
+    "竖屏视频",
+    "上下黑边",
+    "左右黑边超一半",
+    "马赛克遮挡",
+    "画面模糊",
+    "暴露/导向问题",
+    "纯风景无人物",
+    "风景超一半时长",
+    "广告内容",
+    "吸毒画面",
+    "时长限制（<2分钟）"
+  ],
+  "ignored_patterns": [
+    "__pycache__/",
+    "*.py[cod]",
+    "venv/",
+    "env/",
+    "data/to_review/*",
+    "data/approved/*",
+    "data/rejected/*",
+    "data/manual_review/*",
+    "data/results/*",
+    "data/features/*",
+    ".vscode/",
+    ".idea/",
+    ".DS_Store",
+    ".spec-workflow/",
+    "*.key",
+    "*.pem",
+    ".env"
+  ],
+  "gaps_and_recommendations": {
+    "missing_tests": "无自动化测试，建议添加 pytest 单元测试",
+    "missing_ci_cd": "无 CI/CD 配置，建议添加 GitHub Actions",
+    "missing_type_hints": "部分函数缺少类型注解",
+    "documentation_status": "文档完善，包含中文使用说明和快速开始指南",
+    "next_steps": [
+      "添加单元测试和集成测试",
+      "添加 GitHub Actions CI/CD",
+      "完善类型注解",
+      "考虑添加 Web UI（Streamlit/Gradio）",
+      "优化批量处理性能（多线程/异步）"
+    ]
+  },
+  "scan_metadata": {
+    "scan_date": "2025-12-03",
+    "scan_tool": "Claude Code - 初始化架构师",
+    "scan_version": "1.0.0",
+    "truncated": false,
+    "scan_coverage": {
+      "root_files": "完整扫描",
+      "config_module": "完整扫描",
+      "features_module": "完整扫描",
+      "pipeline_module": "完整扫描",
+      "whitelist_module": "完整扫描",
+      "utils_module": "完整扫描",
+      "data_directory": "结构扫描（内容被忽略）"
+    }
+  }
+}
