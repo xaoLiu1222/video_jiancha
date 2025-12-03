@@ -11,9 +11,9 @@ siliconflow:
   api_key: ""
 
   # 使用的模型名称
-  # 推荐: Qwen/Qwen3-VL-72B-Instruct (准确率优先)
-  # 备选: Qwen/Qwen3-VL-32B-Thinking (速度与准确率平衡)
-  model: "Qwen/Qwen3-VL-72B-Instruct"
+  # 推荐: Qwen/Qwen2.5-VL-72B-Instruct (准确率优先)
+  # 备选: Pro/Qwen/Qwen2.5-VL-7B-Instruct (速度优先，免费)
+  model: "Qwen/Qwen2.5-VL-72B-Instruct"
 
   # API 基础地址 (通常无需修改)
   api_base: "https://api.siliconflow.cn/v1"

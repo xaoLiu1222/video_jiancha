@@ -35,6 +35,9 @@ import cv2
 import yaml
 import requests
 
+# 抑制 OpenCV 的 FFmpeg 警告信息（如 H264 解码警告）
+os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "loglevel;quiet"
+
 
 class Config:
     """配置管理类"""
@@ -71,7 +74,7 @@ class Config:
     @property
     def model(self) -> str:
         """获取模型名称"""
-        return self.get("siliconflow.model", "Qwen/Qwen3-VL-72B-Instruct")
+        return self.get("siliconflow.model", "Qwen/Qwen2.5-VL-72B-Instruct")
 
     @property
     def api_base(self) -> str:
