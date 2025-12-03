@@ -206,19 +206,30 @@ vertical, black_border_top_bottom, black_border_left_right, blurry, mosaic, linx
 
         # 上传视频到 Gemini
         print(f"\n[2/3] 上传视频到 Gemini...")
-        temp_video_path = None
         try:
-            # 处理中文文件名：复制到临时文件（使用英文名）
             original_path = Path(video_path)
-            temp_dir = Path("./temp_upload")
-            temp_dir.mkdir(exist_ok=True)
 
-            # 生成临时文件名（保留扩展名）
-            import uuid
-            temp_video_path = temp_dir / f"video_{uuid.uuid4().hex[:8]}{original_path.suffix}"
-            shutil.copy2(video_path, temp_video_path)
+            # 获取 MIME 类型
+            mime_types = {
+                ".mp4": "video/mp4",
+                ".avi": "video/x-msvideo",
+                ".mov": "video/quicktime",
+                ".ts": "video/mp2t",
+                ".mkv": "video/x-matroska",
+                ".flv": "video/x-flv",
+                ".webm": "video/webm",
+                ".wmv": "video/x-ms-wmv",
+            }
+            mime_type = mime_types.get(original_path.suffix.lower(), "video/mp4")
 
-            video_file = self.client.files.upload(file=str(temp_video_path))
+            # 读取文件内容并上传（避免中文路径问题）
+            with open(video_path, "rb") as f:
+                video_data = f.read()
+
+            video_file = self.client.files.upload(
+                file=video_data,
+                config={"mime_type": mime_type}
+            )
             print(f"  ✓ 上传成功: {video_file.name}")
 
             # 等待视频处理完成
@@ -234,19 +245,12 @@ vertical, black_border_top_bottom, black_border_left_right, blurry, mosaic, linx
 
         except Exception as e:
             print(f"  ✗ 上传失败: {e}")
-            # 清理临时文件
-            if temp_video_path and temp_video_path.exists():
-                temp_video_path.unlink()
             return {
                 "decision": "manual_review",
                 "reason": f"视频上传失败: {e}",
                 "confidence": 0.0,
                 "error": str(e)
             }
-
-        # 清理临时上传文件
-        if temp_video_path and temp_video_path.exists():
-            temp_video_path.unlink()
 
         # 调用 Gemini API 审核
         print(f"\n[3/3] 调用 {self.config.model} 模型审核...")
