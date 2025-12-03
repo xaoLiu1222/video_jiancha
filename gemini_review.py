@@ -206,31 +206,38 @@ vertical, black_border_top_bottom, black_border_left_right, blurry, mosaic, linx
 
         # 上传视频到 Gemini
         print(f"\n[2/3] 上传视频到 Gemini...")
+        temp_file_path = None
         try:
             original_path = Path(video_path)
 
-            # 获取 MIME 类型
-            mime_types = {
-                ".mp4": "video/mp4",
-                ".avi": "video/x-msvideo",
-                ".mov": "video/quicktime",
-                ".ts": "video/mp2t",
-                ".mkv": "video/x-matroska",
-                ".flv": "video/x-flv",
-                ".webm": "video/webm",
-                ".wmv": "video/x-ms-wmv",
-            }
-            mime_type = mime_types.get(original_path.suffix.lower(), "video/mp4")
+            # 检查文件名是否包含非 ASCII 字符
+            original_name = original_path.name
+            has_non_ascii = any(ord(c) > 127 for c in original_name)
 
-            # 读取文件内容并上传（避免中文路径问题）
-            with open(video_path, "rb") as f:
-                video_data = f.read()
+            if has_non_ascii:
+                # 创建临时符号链接或硬链接（不复制文件内容）
+                import uuid
+                temp_dir = Path("./temp_upload")
+                temp_dir.mkdir(exist_ok=True)
+                temp_file_path = temp_dir / f"video_{uuid.uuid4().hex[:8]}{original_path.suffix}"
 
-            video_file = self.client.files.upload(
-                file=video_data,
-                config={"mime_type": mime_type}
-            )
+                # 尝试创建硬链接（不占用额外空间）
+                try:
+                    os.link(video_path, temp_file_path)
+                except (OSError, AttributeError):
+                    # 如果硬链接失败，复制文件
+                    shutil.copy2(video_path, temp_file_path)
+
+                upload_path = str(temp_file_path)
+            else:
+                upload_path = video_path
+
+            video_file = self.client.files.upload(file=upload_path)
             print(f"  ✓ 上传成功: {video_file.name}")
+
+            # 清理临时文件
+            if temp_file_path and temp_file_path.exists():
+                temp_file_path.unlink()
 
             # 等待视频处理完成
             while video_file.state.name == "PROCESSING":
@@ -245,6 +252,9 @@ vertical, black_border_top_bottom, black_border_left_right, blurry, mosaic, linx
 
         except Exception as e:
             print(f"  ✗ 上传失败: {e}")
+            # 清理临时文件
+            if temp_file_path and temp_file_path.exists():
+                temp_file_path.unlink()
             return {
                 "decision": "manual_review",
                 "reason": f"视频上传失败: {e}",
