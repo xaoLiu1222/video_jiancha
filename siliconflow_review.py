@@ -28,15 +28,22 @@ import json
 import base64
 import shutil
 import argparse
+import warnings
 from pathlib import Path
 from typing import List, Dict, Any, Optional
+
+# 抑制 OpenCV/FFmpeg 的警告信息（必须在 import cv2 之前设置）
+os.environ["OPENCV_LOG_LEVEL"] = "SILENT"
+os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "loglevel;quiet"
+os.environ["OPENCV_VIDEOIO_DEBUG"] = "0"
 
 import cv2
 import yaml
 import requests
 
-# 抑制 OpenCV 的 FFmpeg 警告信息（如 H264 解码警告）
-os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "loglevel;quiet"
+# 额外的警告抑制
+warnings.filterwarnings("ignore", category=UserWarning)
+cv2.setLogLevel(0)  # 0 = LOG_LEVEL_SILENT
 
 
 class Config:
