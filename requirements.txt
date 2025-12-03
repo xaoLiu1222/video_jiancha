@@ -1,17 +1,12 @@
-# 视频审核系统
-# Video Review System
+# 视频审核系统依赖
 
 # 核心依赖
 opencv-python>=4.8.0
 numpy>=1.24.0
-requests>=2.28.0
 pyyaml>=6.0
 
-# 可选依赖（用于本地白名单方案）
-# torch>=2.0.0
-# transformers>=4.30.0
-# faiss-cpu>=1.7.4
+# Google Gemini API（推荐）
+google-genai>=1.0.0
 
-# 开发测试
-# pytest>=7.3.0
-# tqdm>=4.65.0
+# 硅基流动 API（备选）
+requests>=2.28.0
